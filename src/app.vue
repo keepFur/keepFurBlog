@@ -1,9 +1,12 @@
 <template>
     <div>
-        <router-view></router-view>
+        <router-view>
+            <Menu></Menu>
+        </router-view>
     </div>
 </template>
 <script>
+import './views/Nav.vue';
     export default {
         data() {
             return {
