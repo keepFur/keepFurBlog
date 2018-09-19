@@ -24,174 +24,177 @@
 </template>
 
 <script>
-import { getTableData } from '@/api/data'
-import { mapMutations } from 'vuex'
+import { readBlogList, deleteBlogById } from "@/api/blog";
+import { mapMutations } from "vuex";
 export default {
-  name: 'blog_list_page',
+  name: "blog_list_page",
   components: {},
-  data () {
+  data() {
     return {
       searchForm: {
-        keyword: ''
+        keyword: ""
       },
       columns: [
         {
-          title: '标题',
-          key: 'title'
+          title: "标题",
+          key: "title"
         },
         {
-          title: '内容摘要',
-          key: 'content_simple'
+          title: "内容摘要",
+          key: "content"
         },
         {
-          title: '分组',
-          key: 'group'
+          title: "分组",
+          key: "groupId"
         },
         {
-          title: '作者',
-          key: 'author'
+          title: "作者",
+          key: "author"
         },
         {
-          title: '日期',
-          key: 'createTime',
+          title: "日期",
+          key: "createdDate",
           sortable: true
         },
         {
-          title: '操作',
-          key: 'actions',
+          title: "操作",
+          key: "actions",
           width: 250,
-          align: 'center',
+          align: "center",
           render: (h, params) => {
-            return h('div', [
+            return h("div", [
               h(
-                'Button',
+                "Button",
                 {
                   props: {
-                    type: 'default',
-                    size: 'small'
+                    type: "default",
+                    size: "small"
                   },
                   style: {
-                    marginRight: '8px'
+                    marginRight: "8px"
                   },
                   on: {
                     click: () => {
-                      this.viewHandler(params.row.id)
+                      this.viewHandler(params.row.id);
                     }
                   }
                 },
-                '查看'
+                "查看"
               ),
               h(
-                'Button',
+                "Button",
                 {
                   props: {
-                    type: 'default',
-                    size: 'small'
+                    type: "default",
+                    size: "small"
                   },
                   style: {
-                    marginRight: '8px'
+                    marginRight: "8px"
                   },
                   on: {
                     click: () => {
-                      this.editHandler(params.row.id)
+                      this.editHandler(params.row.id);
                     }
                   }
                 },
-                '编辑'
+                "编辑"
               ),
               h(
-                'Button',
+                "Button",
                 {
                   props: {
-                    type: 'default',
-                    size: 'small'
+                    type: "default",
+                    size: "small"
                   },
                   on: {
                     click: () => {
-                      this.deleteHandler(params.row.id)
+                      this.deleteHandler(params.row.id);
                     }
                   }
                 },
-                '删除'
+                "删除"
               )
-            ])
+            ]);
           }
         }
       ],
       tableData: []
-    }
+    };
   },
   methods: {
-    ...mapMutations(['addTag']),
-    handleDelete (params) {
-      console.log(params)
+    ...mapMutations(["addTag"]),
+    changePage() {},
+    readBlogList() {
+      readBlogList({
+        limit: 20,
+        offset: 1,
+        keyword: this.searchForm.keyword,
+        isSuper: 1
+      })
+        .then(res => {
+          if (res.data.ret === 0) {
+            this.tableData = res.data.rows;
+          } else {
+            this.$Message.success(res.data.msg);
+          }
+        })
+        .catch(err => {
+          this.$Message.success(err.message);
+        });
     },
-    changePage () {},
-    exportExcel () {
+    exportExcel() {
       this.$refs.tables.exportCsv({
         filename: `table-${new Date().valueOf()}.csv`
-      })
+      });
     },
-    createHandler () {
-      this.$router.push('create_blog_page')
+    createHandler() {
+      this.$router.push("create_blog_page");
     },
-    searchHandler () {
-      if (this.searchForm.keyword.trim()) {
-        this.tableData = this.tableData.filter((item, index) => {
-          return (
-            item.title.search(this.searchForm.keyword) !== -1 ||
-            item.content_simple.search(this.searchForm.keyword) !== -1
-          )
-        })
-      } else {
-        this.tableData = this.oldTableData
-      }
+    searchHandler() {
+      this.readBlogList();
     },
-    viewHandler (id) {
+    viewHandler(id) {
       const route = {
-        name: 'view_blog_page',
+        name: "view_blog_page",
         params: {
           id
         },
         meta: {
           title: `浏览博客-${id}`
         }
-      }
+      };
       this.addTag({
         route: route,
-        type: 'push'
-      })
-      this.$router.push(route)
+        type: "push"
+      });
+      this.$router.push(route);
     },
-    deleteHandler (id) {
+    deleteHandler(id) {
       this.tableData = this.tableData.filter(item => {
-        return item.id !== id
-      })
+        return item.id !== id;
+      });
     },
-    editHandler (id) {
+    editHandler(id) {
       const route = {
-        name: 'edit_blog_page',
+        name: "edit_blog_page",
         params: {
           id
         },
         meta: {
           title: `编辑博客-${id}`
         }
-      }
+      };
       this.addTag({
         route: route,
-        type: 'push'
-      })
-      this.$router.push(route)
+        type: "push"
+      });
+      this.$router.push(route);
     }
   },
-  mounted () {
-    getTableData().then(res => {
-      this.tableData = res.data
-      this.oldTableData = res.data
-    })
+  mounted() {
+    this.readBlogList();
   }
-}
+};
 </script>
 
 <style>
