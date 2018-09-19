@@ -16,12 +16,17 @@ const USER_MAP = {
     avator: 'https://avatars0.githubusercontent.com/u/20942571?s=460&v=4'
   }
 }
+
 router.get('/get_info', function (req, res, next) {
   res.send(USER_MAP[req.query.token]);
 });
 
 router.post('/login', function (req, res, next) {
   res.send({ token: USER_MAP[req.body.userName].token });
+});
+
+router.post('/logout', function () {
+
 });
 
 module.exports = router;
