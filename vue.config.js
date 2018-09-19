@@ -12,7 +12,7 @@ const resolve = dir => {
 // 例如：https://www.foobar.com/my-app/
 // 需要将它改为'/my-app/'
 const BASE_URL = process.env.NODE_ENV === 'production'
-  ? '/iview-admin/'
+  ? '/'
   : '/'
 
 module.exports = {
@@ -24,6 +24,7 @@ module.exports = {
   // https://www.foobar.com/my-app/
   // then change this to '/my-app/'
   baseUrl: BASE_URL,
+  outputDir: resolve('server/static'),
   // tweak internal webpack configuration.
   // see https://github.com/vuejs/vue-cli/blob/dev/docs/webpack.md
   chainWebpack: config => {
@@ -38,6 +39,12 @@ module.exports = {
     overlay: {
       warnings: false,
       errors: false
+    },
+    proxy: {
+      '/api': {
+        target: 'http://172.30.50.153:3000',
+        changeOrigin: true,  //是否跨域
+      }
     }
   },
   lintOnSave: false
