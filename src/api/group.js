@@ -11,14 +11,15 @@ export const createGroup = ({ name, type, userId }) => {
     });
 };
 
-export const readGroupList = ({ limit = 20, offset = 1, keyword }) => {
+export const readGroupList = ({ limit = 20, offset = 1, keyword, type }) => {
     return axios.request({
         url: '/api/group/read_group_list',
         params: {
             limit,
             offset,
             isSuper: 1,
-            keyword
+            keyword,
+            type
         },
         method: 'get'
     });
@@ -34,7 +35,7 @@ export const readGroupById = (id) => {
     });
 };
 
-export const updateGroupById = (id, { title, content }) => {
+export const updateGroupById = (id, name) => {
     return axios.request({
         url: '/api/group/update_group_by_id',
         method: 'post',

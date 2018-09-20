@@ -1,7 +1,7 @@
 <template>
   <div>
     <Card>
-        <Form ref="searchForm" :model="searchForm"  inline>
+      <Form ref="searchForm" :model="searchForm"  inline>
             <FormItem prop="user">
                 <i-input type="text" style="width:400px;" clearable v-model="searchForm.keyword" placeholder="输入关键字搜索">
                 </i-input>
@@ -10,7 +10,7 @@
                 <Button type="primary" @click="searchHandler('formInline')">搜索</Button>
             </FormItem>
             <FormItem>
-                <Button type="primary" @click="createHandler">创建</Button>
+                <Button type="primary" @click="showCreate=true">创建</Button>
             </FormItem>
       </Form>
       <Table :data="tableData" :columns="columns" stripe></Table>
@@ -20,24 +20,59 @@
         </div>
       </div>
     </Card>
+    <Modal
+        v-model="showCreate"
+        title="创建"
+        @on-ok="createHandler"
+        @on-cancel="showCreate=false">
+        <Form ref="createForm" :model="createForm">
+            <FormItem>
+                <i-input type="text" autofocus clearable v-model="createForm.name" placeholder="输入名称"/>
+            </FormItem>
+      </Form>
+    </Modal>
+    <Modal
+        v-model="showUpdate"
+        title="编辑"
+        @on-ok="updateHandler"
+        @on-cancel="showUpdate=false">
+        <Form ref="updateForm" :model="updateForm">
+            <FormItem>
+                <i-input type="text" autofocus clearable v-model="updateForm.name"/>
+            </FormItem>
+      </Form>
+    </Modal>
   </div>
 </template>
 
 <script>
-import { readBlogList, deleteBlogById } from "@/api/blog";
+import {
+  readGroupList,
+  createGroup,
+  deleteGroupById,
+  updateGroupById
+} from "@/api/group";
 import { mapMutations } from "vuex";
 export default {
-  name: "blog_list_page",
+  name: "group_list_page",
   components: {},
   data() {
     return {
       searchForm: {
         keyword: ""
       },
+      createForm: {
+        name: ""
+      },
+      updateForm: {
+        name: ""
+      },
+      showCreate: false,
+      showUpdate: false,
       columns: [
         {
           title: "名称",
-          key: "title"
+          key: "name"
         },
         {
           title: "日期",
@@ -78,7 +113,9 @@ export default {
                   },
                   on: {
                     click: () => {
-                      this.editHandler(params.row.id);
+                      this.showUpdate = true;
+                      this.updateForm.name = params.row.name;
+                      this.updateForm.id = params.row.id;
                     }
                   }
                 },
@@ -109,25 +146,18 @@ export default {
       tableData: []
     };
   },
-  watch: {
-    $route(to, from) {
-      if (
-        to.name === "list_blog_page" &&
-        (from.name === "edit_blog_page" || from.name === "create_blog_page")
-      ) {
-        this.readBlogList();
-      }
-    }
+  mounted() {
+    this.readGroupList();
   },
   methods: {
-    ...mapMutations(["addTag"]),
     changePage() {},
-    readBlogList() {
-      readBlogList({
+    readGroupList() {
+      readGroupList({
         limit: 20,
         offset: 1,
         keyword: this.searchForm.keyword,
-        isSuper: 1
+        isSuper: 1,
+        type: 1
       })
         .then(res => {
           if (res.data.ret === 0) {
@@ -140,62 +170,45 @@ export default {
           this.$Message.success(err.message);
         });
     },
-    exportExcel() {
-      this.$refs.tables.exportCsv({
-        filename: `table-${new Date().valueOf()}.csv`
-      });
-    },
     createHandler() {
-      this.$router.push("create_blog_page");
-    },
-    searchHandler() {
-      this.readBlogList();
-    },
-    viewHandler(id) {
-      const route = {
-        name: "view_blog_page",
-        params: {
-          id
-        },
-        meta: {
-          title: `浏览博客-${id}`
-        }
-      };
-      this.addTag({
-        route: route,
-        type: "push"
-      });
-      this.$router.push(route);
-    },
-    deleteHandler(id, status) {
-      deleteBlogById(id, status).then(resData => {
+      createGroup({
+        name: this.createForm.name,
+        type: 1,
+        userId: 1
+      }).then(resData => {
         if (resData.data.ret === 0) {
           this.$Message.success("操作成功");
+          this.readGroupList();
         } else {
-          this.$Message.success(resData.data.msg);
+          this.$Message.error(resData.data.msg);
         }
       });
-      this.readBlogList();
     },
-    editHandler(id) {
-      const route = {
-        name: "edit_blog_page",
-        params: {
-          id
-        },
-        meta: {
-          title: `编辑博客-${id}`
+    searchHandler() {
+      this.readGroupList();
+    },
+    deleteHandler(id, status) {
+      deleteGroupById(id, status).then(resData => {
+        if (resData.data.ret === 0) {
+          this.$Message.success("操作成功");
+          this.readGroupList();
+        } else {
+          this.$Message.error(resData.data.msg);
         }
-      };
-      this.addTag({
-        route: route,
-        type: "push"
       });
-      this.$router.push(route);
+    },
+    updateHandler() {
+      updateGroupById(this.updateForm.id, this.updateForm.name).then(
+        resData => {
+          if (resData.data.ret === 0) {
+            this.$Message.success("操作成功");
+            this.readGroupList();
+          } else {
+            this.$Message.error(resData.data.msg);
+          }
+        }
+      );
     }
-  },
-  mounted() {
-    this.readBlogList();
   }
 };
 </script>

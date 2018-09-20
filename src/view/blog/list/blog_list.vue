@@ -7,7 +7,7 @@
                 </i-input>
             </FormItem>
             <FormItem>
-                <Button type="primary" @click="searchHandler('formInline')">搜索</Button>
+                <Button  @click="searchHandler('formInline')">搜索</Button>
             </FormItem>
             <FormItem>
                 <Button type="primary" @click="createHandler">创建</Button>
@@ -16,7 +16,7 @@
       <Table :data="tableData" :columns="columns" stripe></Table>
       <div style="margin: 10px;overflow: hidden">
         <div style="float: right;">
-            <Page :total="tableData.length" :current="1" @on-change="changePage"></Page>
+            <Page :total="total" :current="1" :page-size="20"  @on-change="changePage"></Page>
         </div>
       </div>
     </Card>
@@ -86,7 +86,7 @@ export default {
                   },
                   on: {
                     click: () => {
-                      this.viewHandler(params.row.id);
+                      this.viewHandler(params.row.id, params.row.title);
                     }
                   }
                 },
@@ -104,7 +104,7 @@ export default {
                   },
                   on: {
                     click: () => {
-                      this.editHandler(params.row.id);
+                      this.editHandler(params.row.id, params.row.title);
                     }
                   }
                 },
@@ -132,7 +132,8 @@ export default {
           }
         }
       ],
-      tableData: []
+      tableData: [],
+      total: 0
     };
   },
   watch: {
@@ -144,6 +145,9 @@ export default {
         this.readBlogList();
       }
     }
+  },
+  created() {
+    this.readBlogList();
   },
   methods: {
     ...mapMutations(["addTag"]),
@@ -158,6 +162,7 @@ export default {
         .then(res => {
           if (res.data.ret === 0) {
             this.tableData = res.data.rows;
+            this.total = res.data.total;
           } else {
             this.$Message.success(res.data.msg);
           }
@@ -165,11 +170,6 @@ export default {
         .catch(err => {
           this.$Message.success(err.message);
         });
-    },
-    exportExcel() {
-      this.$refs.tables.exportCsv({
-        filename: `table-${new Date().valueOf()}.csv`
-      });
     },
     createHandler() {
       this.$router.push("create_blog_page");
@@ -184,7 +184,7 @@ export default {
           id
         },
         meta: {
-          title: `浏览博客-${id}`
+          title: `浏览博客-${title}`
         }
       };
       this.addTag({
@@ -197,20 +197,20 @@ export default {
       deleteBlogById(id, status).then(resData => {
         if (resData.data.ret === 0) {
           this.$Message.success("操作成功");
+          this.readBlogList();
         } else {
           this.$Message.success(resData.data.msg);
         }
       });
-      this.readBlogList();
     },
-    editHandler(id) {
+    editHandler(id, title) {
       const route = {
         name: "edit_blog_page",
         params: {
           id
         },
         meta: {
-          title: `编辑博客-${id}`
+          title: `编辑博客-${title}`
         }
       };
       this.addTag({
@@ -219,9 +219,6 @@ export default {
       });
       this.$router.push(route);
     }
-  },
-  mounted() {
-    this.readBlogList();
   }
 };
 </script>

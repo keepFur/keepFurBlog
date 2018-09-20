@@ -4,6 +4,7 @@
 let mysql = require("mysql");
 let Config = require('./config');
 let Blog = require("./blog");
+let Group = require("./group");
 // let connection = mysql.createConnection({
 //     host: Config.dev.keepfur_blog_db.host,
 //     user: Config.dev.keepfur_blog_db.user,
@@ -24,5 +25,6 @@ let pool = mysql.createPool({
 });
 
 module.exports = {
-    blog: new Blog(pool)
+    blog: new Blog(pool),
+    group: new Group(pool)
 };

@@ -3,8 +3,7 @@
     <Form :model="blogInfo" label-position="top">
         <FormItem label="分组">
             <Select v-model="blogInfo.groupId">
-                <Option value="1">生活</Option>
-                <Option value="2">工作</Option>
+              <Option  v-for="(item,index) in groupList" :key="index" :value="item.id">{{item.name}}</Option>
             </Select>
         </FormItem>
         <FormItem label="标题">
@@ -21,6 +20,7 @@
 <script>
 import Editor from "_c/editor";
 import { readBlogList, readBlogById, updateBlogById } from "@/api/blog";
+import { readGroupList } from "@/api/group";
 export default {
   name: "edit_blog_page",
   components: {
@@ -30,12 +30,13 @@ export default {
     return {
       blogInfo: {
         title: "",
-        groupId: "1",
+        groupId: 1,
         content: ""
-      }
+      },
+      groupList: []
     };
   },
-  mounted() {
+  created() {
     readBlogById(this.$route.params.id).then(resData => {
       if (resData.data.ret === 0) {
         this.blogInfo = resData.data.blog[0];
@@ -44,10 +45,19 @@ export default {
         this.$Message.success(resData.data.msg);
       }
     });
+    this.readGroupList();
   },
   methods: {
-    changeHandler(html, text) {
-      this.blogInfo.content = html;
+    readGroupList() {
+      readGroupList({
+        limit: 20,
+        offset: 1,
+        type: 1
+      }).then(resData => {
+        if (resData.data.ret === 0) {
+          this.groupList = resData.data.rows;
+        }
+      });
     },
     saveHandler() {
       updateBlogById(this.$route.params.id, this.blogInfo).then(resData => {

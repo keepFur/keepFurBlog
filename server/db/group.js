@@ -4,7 +4,7 @@ module.exports = class Group {
         this.pool = pool;
     }
     createGroup(body) {
-        let cmdText = `INSERT INTO keepfur_group_group (name,type,created_date) VALUES (?,?,?)`,
+        let cmdText = `INSERT INTO keepfur_blog_group (name,type,created_date) VALUES (?,?,?)`,
             cmdParams = [];
         cmdParams.push(body.name);
         cmdParams.push(body.type);
@@ -15,7 +15,7 @@ module.exports = class Group {
     readGroupList(query) {
         let limit = Number(query.limit || 20),
             offset = Number(query.offset - 1) * limit,
-            cmdText = `SELECT id,name,status,created_date AS createdDate,update_date AS updateDate FROM keepfur_group_group WHERE 1=1 AND type=?`,
+            cmdText = `SELECT id,name,status,created_date AS createdDate,update_date AS updateDate FROM keepfur_blog_group WHERE 1=1 AND type=?`,
             cmdParams = [query.type];
         if (query.keyword) {
             cmdText += ` AND name LIKE '%${query.keyword}%'`;
@@ -31,7 +31,7 @@ module.exports = class Group {
     }
 
     readGroupListTotal(query) {
-        let cmdText = `SELECT COUNT(id) as total FROM keepfur_group_group WHERE 1=1 AND type=?`,
+        let cmdText = `SELECT COUNT(id) as total FROM keepfur_blog_group WHERE 1=1 AND type=?`,
             cmdParams = [query.type];
         if (query.keyword) {
             cmdText += ` AND name LIKE '%${query.keyword}%'`;
@@ -45,13 +45,13 @@ module.exports = class Group {
     }
 
     readGroupById(query) {
-        let cmdText = `SELECT id,name,status,created_date AS createdDate,update_date AS updateDate FROM keepfur_group_group WHERE 1=1`,
+        let cmdText = `SELECT id,name,status,created_date AS createdDate,update_date AS updateDate FROM keepfur_blog_group WHERE 1=1`,
             cmdParams = [Number(query.id)];
         return util.return_promise(this.pool, cmdText, cmdParams);
     }
 
     updateGroupById(body) {
-        let cmdText = `UPDATE  keepfur_group_group SET `,
+        let cmdText = `UPDATE  keepfur_blog_group SET `,
             cmdParams = [];
         if (body.name) {
             cmdText += `, name = ?`;
@@ -66,7 +66,7 @@ module.exports = class Group {
     }
 
     deleteGroupById(body) {
-        let cmdText = `UPDATE  keepfur_group_group SET status = ? WHERE id = ? `,
+        let cmdText = `UPDATE  keepfur_blog_group SET status = ? WHERE id = ? `,
             cmdParams = [body.status, body.id];
         return util.return_promise(this.pool, cmdText, cmdParams);
     }
