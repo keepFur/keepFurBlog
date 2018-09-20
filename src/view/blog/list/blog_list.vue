@@ -177,7 +177,7 @@ export default {
     searchHandler() {
       this.readBlogList();
     },
-    viewHandler(id) {
+    viewHandler(id, title) {
       const route = {
         name: "view_blog_page",
         params: {
