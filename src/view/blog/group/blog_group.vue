@@ -1,76 +1,203 @@
 <template>
   <div>
     <Card>
-      <tables ref="tables" editable searchable search-place="top" v-model="tableData" :columns="columns" @on-delete="handleDelete"/>
-      <Button style="margin: 10px 0;" type="primary" @click="exportExcel">导出为Csv文件</Button>
+        <Form ref="searchForm" :model="searchForm"  inline>
+            <FormItem prop="user">
+                <i-input type="text" style="width:400px;" clearable v-model="searchForm.keyword" placeholder="输入关键字搜索">
+                </i-input>
+            </FormItem>
+            <FormItem>
+                <Button type="primary" @click="searchHandler('formInline')">搜索</Button>
+            </FormItem>
+            <FormItem>
+                <Button type="primary" @click="createHandler">创建</Button>
+            </FormItem>
+      </Form>
+      <Table :data="tableData" :columns="columns" stripe></Table>
+      <div style="margin: 10px;overflow: hidden">
+        <div style="float: right;">
+            <Page :total="tableData.length" :current="1" @on-change="changePage"></Page>
+        </div>
+      </div>
     </Card>
   </div>
 </template>
 
 <script>
-import Tables from '_c/tables'
-import { getTableData } from '@/api/data'
+import { readBlogList, deleteBlogById } from "@/api/blog";
+import { mapMutations } from "vuex";
 export default {
-  name: 'tables_page',
-  components: {
-    Tables
-  },
-  data () {
+  name: "blog_list_page",
+  components: {},
+  data() {
     return {
+      searchForm: {
+        keyword: ""
+      },
       columns: [
-        { title: 'Name', key: 'name', sortable: true },
-        { title: 'Email', key: 'email', editable: true },
-        { title: 'Create-Time', key: 'createTime' },
         {
-          title: 'Handle',
-          key: 'handle',
-          options: ['delete'],
-          button: [
-            (h, params, vm) => {
-              return h(
-                'Poptip',
+          title: "名称",
+          key: "title"
+        },
+        {
+          title: "日期",
+          key: "createdDate",
+          sortable: true
+        },
+        {
+          title: "状态",
+          key: "status",
+          render: (h, params) => {
+            return h(
+              "span",
+              {
+                style: {
+                  color: params.row.status === 1 ? "#5cadff" : "#ed4014"
+                }
+              },
+              params.row.status === 1 ? "启用" : "禁用"
+            );
+          }
+        },
+        {
+          title: "操作",
+          key: "actions",
+          width: 250,
+          align: "center",
+          render: (h, params) => {
+            return h("div", [
+              h(
+                "Button",
                 {
                   props: {
-                    confirm: true,
-                    title: '你确定要删除吗?'
+                    type: "default",
+                    size: "small"
+                  },
+                  style: {
+                    marginRight: "8px"
                   },
                   on: {
-                    'on-ok': () => {
-                      vm.$emit('on-delete', params)
-                      vm.$emit(
-                        'input',
-                        params.tableData.filter(
-                          (item, index) => index !== params.row.initRowIndex
-                        )
-                      )
+                    click: () => {
+                      this.editHandler(params.row.id);
                     }
                   }
                 },
-                [h('Button', '自定义删除')]
+                "编辑"
+              ),
+              h(
+                "Button",
+                {
+                  props: {
+                    type: "default",
+                    size: "small"
+                  },
+                  on: {
+                    click: () => {
+                      this.deleteHandler(
+                        params.row.id,
+                        params.row.status === 1 ? 0 : 1
+                      );
+                    }
+                  }
+                },
+                params.row.status === 1 ? "禁用" : "启用"
               )
-            }
-          ]
+            ]);
+          }
         }
       ],
       tableData: []
+    };
+  },
+  watch: {
+    $route(to, from) {
+      if (
+        to.name === "list_blog_page" &&
+        (from.name === "edit_blog_page" || from.name === "create_blog_page")
+      ) {
+        this.readBlogList();
+      }
     }
   },
   methods: {
-    handleDelete (params) {
-      console.log(params)
+    ...mapMutations(["addTag"]),
+    changePage() {},
+    readBlogList() {
+      readBlogList({
+        limit: 20,
+        offset: 1,
+        keyword: this.searchForm.keyword,
+        isSuper: 1
+      })
+        .then(res => {
+          if (res.data.ret === 0) {
+            this.tableData = res.data.rows;
+          } else {
+            this.$Message.success(res.data.msg);
+          }
+        })
+        .catch(err => {
+          this.$Message.success(err.message);
+        });
     },
-    exportExcel () {
+    exportExcel() {
       this.$refs.tables.exportCsv({
         filename: `table-${new Date().valueOf()}.csv`
-      })
+      });
+    },
+    createHandler() {
+      this.$router.push("create_blog_page");
+    },
+    searchHandler() {
+      this.readBlogList();
+    },
+    viewHandler(id) {
+      const route = {
+        name: "view_blog_page",
+        params: {
+          id
+        },
+        meta: {
+          title: `浏览博客-${id}`
+        }
+      };
+      this.addTag({
+        route: route,
+        type: "push"
+      });
+      this.$router.push(route);
+    },
+    deleteHandler(id, status) {
+      deleteBlogById(id, status).then(resData => {
+        if (resData.data.ret === 0) {
+          this.$Message.success("操作成功");
+        } else {
+          this.$Message.success(resData.data.msg);
+        }
+      });
+      this.readBlogList();
+    },
+    editHandler(id) {
+      const route = {
+        name: "edit_blog_page",
+        params: {
+          id
+        },
+        meta: {
+          title: `编辑博客-${id}`
+        }
+      };
+      this.addTag({
+        route: route,
+        type: "push"
+      });
+      this.$router.push(route);
     }
   },
-  mounted () {
-    getTableData().then(res => {
-      this.tableData = res.data
-    })
+  mounted() {
+    this.readBlogList();
   }
-}
+};
 </script>
 
 <style>
