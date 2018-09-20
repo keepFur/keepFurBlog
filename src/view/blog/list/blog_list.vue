@@ -40,12 +40,8 @@ export default {
           key: "title"
         },
         {
-          title: "内容摘要",
-          key: "content"
-        },
-        {
           title: "分组",
-          key: "groupId"
+          key: "groupName"
         },
         {
           title: "作者",
@@ -55,6 +51,21 @@ export default {
           title: "日期",
           key: "createdDate",
           sortable: true
+        },
+        {
+          title: "状态",
+          key: "status",
+          render: (h, params) => {
+            return h(
+              "span",
+              {
+                style: {
+                  color: params.row.status === 1 ? "#5cadff" : "#ed4014"
+                }
+              },
+              params.row.status === 1 ? "启用" : "禁用"
+            );
+          }
         },
         {
           title: "操作",
@@ -108,11 +119,14 @@ export default {
                   },
                   on: {
                     click: () => {
-                      this.deleteHandler(params.row.id);
+                      this.deleteHandler(
+                        params.row.id,
+                        params.row.status === 1 ? 0 : 1
+                      );
                     }
                   }
                 },
-                "删除"
+                params.row.status === 1 ? "禁用" : "启用"
               )
             ]);
           }
@@ -120,6 +134,16 @@ export default {
       ],
       tableData: []
     };
+  },
+  watch: {
+    $route(to, from) {
+      if (
+        to.name === "list_blog_page" &&
+        (from.name === "edit_blog_page" || from.name === "create_blog_page")
+      ) {
+        this.readBlogList();
+      }
+    }
   },
   methods: {
     ...mapMutations(["addTag"]),
@@ -169,10 +193,15 @@ export default {
       });
       this.$router.push(route);
     },
-    deleteHandler(id) {
-      this.tableData = this.tableData.filter(item => {
-        return item.id !== id;
+    deleteHandler(id, status) {
+      deleteBlogById(id, status).then(resData => {
+        if (resData.data.ret === 0) {
+          this.$Message.success("操作成功");
+        } else {
+          this.$Message.success(resData.data.msg);
+        }
       });
+      this.readBlogList();
     },
     editHandler(id) {
       const route = {

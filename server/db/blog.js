@@ -18,23 +18,27 @@ module.exports = class Blog {
     readBlogList(query) {
         let limit = Number(query.limit || 20),
             offset = Number(query.offset - 1) * limit,
-            cmdText = `SELECT id,title,group_id AS groupId,content,media,created_date AS createdDate,update_date AS updateDate FROM keepfur_blog_blog WHERE status = 1`,
+            // cmdText = `SELECT id,title,status,group_id AS groupId,content,media,created_date AS createdDate,update_date AS updateDate FROM keepfur_blog_blog WHERE 1=1`,
+            cmdText = `SELECT b.id,title,b.status,group_id AS groupId, u.username AS author, g.name AS groupName, content,media,b.created_date AS createdDate,b.update_date AS updateDate 
+                       FROM keepfur_blog_blog b 
+                       INNER JOIN keepfur_blog_group g ON b.group_id=g.id 
+                       INNER JOIN keepfur_blog_user u ON u.id = b.author_id WHERE g.type=1`,
             cmdParams = [];
         if (query.keyword) {
-            cmdText += ` AND (title LIKE '%${query.keyword}%' OR content LIKE '%${query.keyword}%')`;
+            cmdText += ` AND (b.title LIKE '%${query.keyword}%' OR b.content LIKE '%${query.keyword}%')`;
         }
         // 普通用户只能看自己的任务
         if (!query.isSuper) {
-            cmdText += ` AND author_id = ?`;
+            cmdText += ` AND b.author_id = ?`;
             cmdParams.push(query.author_id);
         }
-        cmdText += ` ORDER BY created_date DESC LIMIT ?,?`;
+        cmdText += ` ORDER BY b.created_date DESC LIMIT ?,?`;
         cmdParams.push(offset, limit);
         return util.return_promise(this.pool, cmdText, cmdParams);
     }
 
     readBlogListTotal(query) {
-        let cmdText = `SELECT COUNT(id) as total FROM keepfur_blog_blog WHERE status = 1 `,
+        let cmdText = `SELECT COUNT(id) as total FROM keepfur_blog_blog WHERE 1=1 `,
             cmdParams = [];
         if (query.keyword) {
             cmdText += ` AND (title LIKE '%${query.keyword}%' OR content LIKE '%${query.keyword}%')`;
@@ -48,7 +52,10 @@ module.exports = class Blog {
     }
 
     readBlogById(query) {
-        let cmdText = `SELECT id,title,group_id AS groupId,content,media,created_date AS createdDate,update_date AS updateDate FROM keepfur_blog_blog WHERE status = 1 AND id = ? `,
+        let cmdText = `SELECT b.id,title,b.status,group_id AS groupId, u.username AS author, g.name AS groupName, content,media,b.created_date AS createdDate,b.update_date AS updateDate 
+                        FROM keepfur_blog_blog b 
+                        INNER JOIN keepfur_blog_group g ON b.group_id=g.id 
+                        INNER JOIN keepfur_blog_user u ON u.id = b.author_id WHERE b.id = ?`,
             cmdParams = [Number(query.id)];
         return util.return_promise(this.pool, cmdText, cmdParams);
     }
@@ -58,24 +65,24 @@ module.exports = class Blog {
             cmdParams = [];
         if (body.title) {
             cmdText += `, title = ?`;
-            cmdParams.push(query.title);
+            cmdParams.push(body.title);
         }
         if (body.content) {
             cmdText += `, content = ?`;
-            cmdParams.push(query.content);
+            cmdParams.push(body.content);
         }
         if (body.media) {
             cmdText += `, media = ?`;
-            cmdParams.push(query.media);
+            cmdParams.push(body.media);
         }
         if (body.groupId) {
             cmdText += `, group_id = ?`;
-            cmdParams.push(query.groupId);
+            cmdParams.push(body.groupId);
         }
         cmdText += `,update_date = ?`;
         cmdParams.push(new Date());
         cmdText += ` WHERE id = ?`;
-        cmdParams.push(query.id);
+        cmdParams.push(body.id);
         cmdText = cmdText.replace(/SET ,/ig, 'SET ');
         return util.return_promise(this.pool, cmdText, cmdParams);
     }

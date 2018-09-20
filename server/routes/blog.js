@@ -3,7 +3,7 @@ const router = express.Router();
 const blog = require('../lib/blog');
 const util = require('../db/util');
 // 新增博客
-router.get('/create_blog', function (req, res, next) {
+router.post('/create_blog', function (req, res, next) {
     try {
         blog.createBlog(req, res);
     } catch (error) {
