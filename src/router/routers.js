@@ -102,7 +102,7 @@ export default [
         name: 'todo_list_page',
         meta: {
           icon: 'ios-list-box',
-          title: '日程列表'
+          title: '日程管理'
         },
         component: () => import('@/view/todo/list/todo_list.vue')
       }]
