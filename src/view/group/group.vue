@@ -7,7 +7,7 @@
                 </i-input>
             </FormItem>
             <FormItem>
-                <Button type="primary" @click="searchHandler('formInline')">搜索</Button>
+                <Button @click="searchHandler()">搜索</Button>
             </FormItem>
             <FormItem>
                 <Button type="primary" @click="showCreate=true">创建</Button>
@@ -29,6 +29,13 @@
             <FormItem>
                 <i-input type="text" autofocus clearable v-model="createForm.name" placeholder="输入名称"/>
             </FormItem>
+            <FormItem label="分组">
+                <Select v-model="createForm.type">
+                    <Option  value="1">博客</Option>
+                    <Option  value="2">日程</Option>
+                    <Option  value="3">素材</Option>
+                </Select>
+            </FormItem>
       </Form>
     </Modal>
     <Modal
@@ -39,6 +46,13 @@
         <Form ref="updateForm" :model="updateForm">
             <FormItem>
                 <i-input type="text" autofocus clearable v-model="updateForm.name"/>
+            </FormItem>
+            <FormItem label="分组">
+                <Select v-model="updateForm.type">
+                    <Option  value="1">博客</Option>
+                    <Option  value="2">日程</Option>
+                    <Option  value="3">素材</Option>
+                </Select>
             </FormItem>
       </Form>
     </Modal>
@@ -78,10 +92,13 @@ export default {
       searchForm: {
         keyword: ""
       },
+      type: ["博客", "日程", "素材"],
       createForm: {
-        name: ""
+        name: "",
+        type: "1"
       },
       updateForm: {
+        type: 1,
         name: ""
       },
       showCreate: false,
@@ -90,6 +107,13 @@ export default {
         {
           title: "名称",
           key: "name"
+        },
+        {
+          title: "类别",
+          key: "type",
+          render: (h, params) => {
+            return h("span", {}, this.type[params.row.type - 1]);
+          }
         },
         {
           title: "日期",
@@ -173,8 +197,7 @@ export default {
         limit: 20,
         offset: 1,
         keyword: this.searchForm.keyword,
-        isSuper: 1,
-        type: 1
+        isSuper: 1
       })
         .then(res => {
           if (res.data.ret === 0) {
@@ -190,7 +213,7 @@ export default {
     createHandler() {
       createGroup({
         name: this.createForm.name,
-        type: 1,
+        type: this.createForm.type,
         userId: 1
       }).then(resData => {
         if (resData.data.ret === 0) {
@@ -215,16 +238,18 @@ export default {
       });
     },
     updateHandler() {
-      updateGroupById(this.updateForm.id, this.updateForm.name).then(
-        resData => {
-          if (resData.data.ret === 0) {
-            this.$Message.success("操作成功");
-            this.readGroupList();
-          } else {
-            this.$Message.error(resData.data.msg);
-          }
+      updateGroupById({
+        id: this.updateForm.id,
+        type: this.updateForm.type,
+        name: this.updateForm.name
+      }).then(resData => {
+        if (resData.data.ret === 0) {
+          this.$Message.success("操作成功");
+          this.readGroupList();
+        } else {
+          this.$Message.error(resData.data.msg);
         }
-      );
+      });
     }
   }
 };

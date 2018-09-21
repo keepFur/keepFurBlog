@@ -35,13 +35,14 @@ export const readGroupById = (id) => {
     });
 };
 
-export const updateGroupById = (id, name) => {
+export const updateGroupById = ({ id, name, type }) => {
     return axios.request({
         url: '/api/group/update_group_by_id',
         method: 'post',
         data: {
             id,
-            name
+            name,
+            type
         }
     });
 };
