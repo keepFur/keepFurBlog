@@ -7,13 +7,11 @@
         </TabPane>
         <TabPane label="视频" name="3">
         </TabPane>
-        <Button size="small" slot="extra" type="primary">创建</Button>
       </Tabs>
       <Row>
         <Tabs>
           <TabPane label="全部" id="all"></TabPane>
           <TabPane :label="item.name" :id="item.id" v-for="(item,index) in groupList" :key="index"></TabPane>
-          <Button size="small" slot="extra" icon="md-add"></Button>
         </Tabs>
       </Row>
       <Row :gutter="8" v-if="materialType==='1'">
@@ -71,32 +69,6 @@
           </Card>
         </i-col>
       </Row>
-    <!-- <Modal
-        v-model="showSwap"
-        title="创建"
-        @on-ok="createHandler"
-        @on-cancel="showSwap=false">
-        <Form :model="todoInfo" :label-width="80">
-            <FormItem label="标题">
-                <Input v-model="todoInfo.title" />
-            </FormItem>
-            <FormItem label="分组">
-                <Select v-model="todoInfo.groupId">
-                    <Option  v-for="(item,index) in groupList" :key="index" :value="item.id">{{item.name}}</Option>
-                </Select>
-            </FormItem>
-            <FormItem label="日期">
-                <Row>
-                    <i-col span="11">
-                        <DatePicker type="datetime" v-model="todoInfo.createdDate" format="yyyy-MM-dd HH:mm"></DatePicker>
-                    </i-col>
-                </Row>
-            </FormItem>
-            <FormItem label="内容">
-                <Input v-model="todoInfo.content" type="textarea" :autosize="{minRows: 2,maxRows: 5}" />
-            </FormItem>
-        </Form>
-    </Modal> -->
     <Modal
         v-model="showSwap"
         title="修改"
@@ -120,7 +92,6 @@ import {
   updateMaterialById,
   deleteMaterialById
 } from "@/api/material";
-import { mapMutations } from "vuex";
 import { readGroupList } from "@/api/group";
 export default {
   name: "material_list_page",

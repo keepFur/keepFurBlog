@@ -170,13 +170,6 @@ export default {
   created() {
     this.readGroupList();
   },
-  watch: {
-    searchForm: {
-      keyword() {
-        this.searchHandler();
-      }
-    }
-  },
   methods: {
     changePage() {},
     readGroupList() {
@@ -214,7 +207,7 @@ export default {
     },
     searchHandler() {
       if (this.searchForm.keyword) {
-        this.tableData = this.tableData.filter(item => {
+        this.tableData = this.tempData.filter(item => {
           return item.name.match(this.searchForm.keyword);
         });
       } else {

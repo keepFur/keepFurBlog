@@ -5,17 +5,15 @@
   <div>
     <Form :model="martialInfo" label-position="top">
         <FormItem label="类型">
-            <Select v-model="martialInfo.type" ref="type">
+            <Select v-model="martialInfo.type" ref="type" @on-change="changeHander">
               <Option value="1">图片</Option>
               <Option value="2">音频</Option>
               <Option value="3">视频</Option>
             </Select>
         </FormItem>
         <FormItem label="分组">
-            <Select v-model="martialInfo.groupId">
-              <Option value="1">生活</Option>
-              <Option value="2">工作</Option>
-              <Option value="3">爱情</Option>
+            <Select v-model="martialInfo.groupId" ref="group" :clearable="true">
+                <Option  v-for="(item,index) in groupList" :key="index" :value="item.id">{{item.name}}</Option>
             </Select>
         </FormItem>
         <FormItem label="文件">
@@ -66,11 +64,10 @@
 <script>
 // todo
 // 1，素材类型的接口
-// 2，新建素材接口
 // 3，素材展示接口，按照类别，支持分页
-// 4，素材的删除
 // 5，素材的分组转移
 import { createMaterial, readMaterialList } from "@/api/material";
+import { readGroupList } from "@/api/group";
 export default {
   name: "create_material",
   data() {
@@ -82,6 +79,8 @@ export default {
       uploadHeader: {
         "Content-Type": "multipart/form-data"
       },
+      groupList: [],
+      groupListTemp: [],
       maxSize: 4096,
       imgName: "",
       visible: false,
@@ -96,6 +95,20 @@ export default {
     getAccept() {
       var a = [".PNG,.JPEG,.SVG,.JPG", ".MP3", ".MP4"];
       return a[(this.martialInfo.type - 1) | 0];
+    },
+    readGroupList() {
+      readGroupList({}).then(resData => {
+        if (resData.data.ret === 0) {
+          this.groupListTemp = resData.data.rows;
+          this.changeHander();
+        }
+      });
+    },
+    changeHander() {
+      this.groupList = this.groupListTemp.filter(item => {
+        return item.type === parseInt(this.martialInfo.type) + 2;
+      });
+      this.$refs.group.clearSingleSelect();
     },
     handleView(url) {
       this.imgName = url;
@@ -162,12 +175,9 @@ export default {
   },
   mounted() {
     this.uploadList = this.$refs.upload.fileList;
+    this.readGroupList();
     readMaterialList({
-      isSuper: 1,
-      limit: 20,
-      offset: 1
-    }).then(resData => {
-      console.log(resData);
+      isSuper: 1
     });
   }
 };
