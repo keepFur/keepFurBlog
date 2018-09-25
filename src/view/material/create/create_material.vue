@@ -22,9 +22,15 @@
             <Row>
               <div class="demo-upload-list" v-for="(item,index) in uploadList" :key="index">
                     <template v-if="item.status === 'finished'">
-                        <img :src="item.url">
+                        <img v-if="martialInfo.type==='1'"  :src="item.url">
+                        <audio v-if="martialInfo.type==='2'"  :src="item.url" controls="controls">
+                            您的浏览器不支持音频功能，建议更新到新版本
+                        </audio>
+                        <video v-if="martialInfo.type==='3'" :src="item.url" controls="controls" width="100%" height="300px">
+                            您的浏览器不支持视频功能，建议更新到新版本
+                        </video>
                         <div class="demo-upload-list-cover">
-                            <Icon type="ios-eye-outline" @click.native="handleView(item.url)"></Icon>
+                            <Icon v-if="martialInfo.type==='1'" type="ios-eye-outline" @click.native="handleView(item.url)"></Icon>
                             <Icon type="ios-trash-outline" @click.native="handleRemove(item)"></Icon>
                         </div>
                     </template>
@@ -143,7 +149,14 @@ export default {
         authorId: 1,
         type: this.martialInfo.type
       }).then(resData => {
-        console.log(resData);
+        if (resData.data.ret === 0) {
+          this.$Message.success("创建成功");
+          this.$router.push({
+            name: "material_list_page"
+          });
+        } else {
+          this.$Message.error(resData.data.msg);
+        }
       });
     }
   },

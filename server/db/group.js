@@ -29,8 +29,7 @@ module.exports = class Group {
             cmdText += ` AND g.user_id = ?`;
             cmdParams.push(query.user_id);
         }
-        cmdText += ` ORDER BY g.created_date DESC LIMIT ?,?`;
-        cmdParams.push(offset, limit);
+        cmdText += ` ORDER BY g.created_date DESC`;
         return util.return_promise(this.pool, cmdText, cmdParams);
     }
 

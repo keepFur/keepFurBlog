@@ -1,27 +1,27 @@
 import axios from '@/libs/api.request';
 
-export const createMaterial = ({ file, name, groupId, path, isSuper = 1, authorId }) => {
+export const createMaterial = ({ file, groupId, isSuper = 1, type, authorId }) => {
     return axios.request({
         url: '/api/material/create_material',
         data: {
             file,
-            name,
-            path,
             authorId,
             isSuper,
-            groupId
+            groupId,
+            type
         },
         method: 'post'
     });
 };
 
-export const readMaterialList = ({ limit = 20, offset = 1, isSuper = 1 }) => {
+export const readMaterialList = ({ limit = 20, offset = 1, isSuper = 1, type }) => {
     return axios.request({
         url: '/api/material/read_material_list',
         params: {
             limit,
             offset,
-            isSuper
+            isSuper,
+            type
         },
         method: 'get'
     });

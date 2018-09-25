@@ -3,33 +3,43 @@ module.exports = class Material {
     constructor(pool) {
         this.pool = pool;
     }
-    createMaterial(body) {
-        let cmdText = `INSERT INTO keepfur_blog_material (name,group_id,author_id,type,path,created_date) VALUES (?,?,?,?,?,?)`,
+    createMaterial(body, files) {
+        let cmdText = `INSERT INTO keepfur_blog_material (name,group_id,author_id,type,path,created_date) VALUES `,
             cmdParams = [];
-        cmdParams.push(body.name);
-        cmdParams.push(body.groupId);
-        cmdParams.push(body.userId);
-        cmdParams.push(body.type);
-        cmdParams.push(body.path);
-        cmdParams.push(util.formatDate('yyyy-mm-dd hh:MM:ss'));
+        files.forEach((file, index) => {
+            if (index !== files.length - 1) {
+                cmdText += '(?,?,?,?,?,?),';
+            } else {
+                cmdText += '(?,?,?,?,?,?)';
+            }
+            cmdParams.push(file.name);
+            cmdParams.push(body.groupId);
+            cmdParams.push(body.authorId);
+            cmdParams.push(body.type);
+            cmdParams.push(file.name);
+            cmdParams.push(util.formatDate('yyyy-mm-dd hh:MM:ss'));
+        });
         return util.return_promise(this.pool, cmdText, cmdParams);
     }
 
     readMaterialList(query) {
         let limit = Number(query.limit || 20),
             offset = Number(query.offset - 1) * limit,
-            cmdText = `SELECT m.id,m.status,m.name,m.path,group_id AS groupId, u.username AS author, g.name AS groupName,m.created_date AS createdDate,m.update_date AS updateDate 
-                       FROM keepfur_blog_material m 
+            cmdText = `SELECT m.id,m.status,m.name,m.path,m.type, group_id AS groupId, u.username AS author, g.name AS groupName,m.created_date AS createdDate,m.update_date AS updateDate 
+                       FROM keepfur_blog_material m
                        INNER JOIN keepfur_blog_group g ON m.group_id=g.id 
-                       INNER JOIN keepfur_blog_user u ON u.id = m.author_id WHERE m.type=?`,
-            cmdParams = [query.type];
+                       INNER JOIN keepfur_blog_user u ON u.id = m.author_id WHERE 1=1`,
+            cmdParams = [];
         // 普通用户只能看自己的任务
         if (!query.isSuper) {
             cmdText += ` AND m.author_id = ?`;
-            cmdParams.push(query.author_id);
+            cmdParams.push(query.authorId);
         }
-        cmdText += ` ORDER BY m.created_date DESC LIMIT ?,?`;
-        cmdParams.push(offset, limit);
+        if (query.type) {
+            cmdText += ` AND m.type = ?`;
+            cmdParams.push(query.type);
+        }
+        cmdText += ` ORDER BY m.created_date DESC`;
         return util.return_promise(this.pool, cmdText, cmdParams);
     }
 
@@ -39,14 +49,18 @@ module.exports = class Material {
         // 普通用户只能看自己的任务
         if (!query.isSuper) {
             cmdText += ` AND author_id = ?`;
-            cmdParams.push(query.author_id);
+            cmdParams.push(query.authorId);
+        }
+        if (query.type) {
+            cmdText += ` AND type = ?`;
+            cmdParams.push(query.type);
         }
         return util.return_promise(this.pool, cmdText, cmdParams);
     }
 
     readMaterialById(query) {
-        let cmdText = `SELECT m.id,m.status,m.name,m.path,group_id AS groupId, u.username AS author, g.name AS groupName,m.created_date AS createdDate,m.update_date AS updateDate 
-                        FROM keepfur_blog_material m 
+        let cmdText = `SELECT m.id,m.status,m.name,m.path,m.type, group_id AS groupId, u.username AS author, g.name AS groupName,m.created_date AS createdDate,m.update_date AS updateDate 
+                        FROM keepfur_blog_material m
                         INNER JOIN keepfur_blog_group g ON m.group_id=g.id 
                         INNER JOIN keepfur_blog_user u ON u.id = m.author_id WHERE m.id=?`,
             cmdParams = [Number(query.id)];
@@ -69,7 +83,7 @@ module.exports = class Material {
     }
 
     deleteMaterialById(body) {
-        let cmdText = `DELETE FROM  keepfur_blog_material WHERE id = ? `,
+        let cmdText = `DELETE FROM keepfur_blog_material WHERE id = ? `,
             cmdParams = [body.id];
         return util.return_promise(this.pool, cmdText, cmdParams);
     }

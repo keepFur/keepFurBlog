@@ -33,7 +33,9 @@
                 <Select v-model="createForm.type">
                     <Option  value="1">博客</Option>
                     <Option  value="2">日程</Option>
-                    <Option  value="3">素材</Option>
+                    <Option  value="3">图片</Option>
+                    <Option  value="4">音频</Option>
+                    <Option  value="5">视频</Option>
                 </Select>
             </FormItem>
       </Form>
@@ -51,7 +53,9 @@
                 <Select v-model="updateForm.type">
                     <Option  value="1">博客</Option>
                     <Option  value="2">日程</Option>
-                    <Option  value="3">素材</Option>
+                    <Option  value="3">图片</Option>
+                    <Option  value="4">音频</Option>
+                    <Option  value="5">视频</Option>
                 </Select>
             </FormItem>
       </Form>
@@ -60,23 +64,6 @@
 </template>
 
 <script>
-// 软电话功能纪要
-// 来电地区调用接口
-// 第一 软电话 cti
-// 第二 来电弹屏
-// 客户信息显示 用户订单
-
-// 软电话的流程
-// 1，login
-// 2，等待 iplt
-// 3，离席 notworkly
-// 4，呼叫 called
-// 5，接听之后等待 acw
-// 6，logout
-// 开发
-// 提供一个js文件
-// 1，初始化
-// 2，注册
 import {
   readGroupList,
   createGroup,
@@ -92,7 +79,7 @@ export default {
       searchForm: {
         keyword: ""
       },
-      type: ["博客", "日程", "素材"],
+      type: ["博客", "日程", "图片", "音频", "视频"],
       createForm: {
         name: "",
         type: "1"
@@ -184,10 +171,11 @@ export default {
           }
         }
       ],
-      tableData: []
+      tableData: [],
+      tempData: []
     };
   },
-  mounted() {
+  created() {
     this.readGroupList();
   },
   methods: {
@@ -202,6 +190,7 @@ export default {
         .then(res => {
           if (res.data.ret === 0) {
             this.tableData = res.data.rows;
+            this.tempData = res.data.rows;
           } else {
             this.$Message.success(res.data.msg);
           }
@@ -225,35 +214,35 @@ export default {
       });
     },
     searchHandler() {
-      this.readGroupList();
+      if (this.searchForm.keyword) {
+        this.tableData = this.tableData.filter(item => {
+          return item.name.match(this.searchForm.keyword);
+        });
+      } else {
+        this.tableData = this.tempData;
+      }
     },
     deleteHandler(id, status) {
-      deleteGroupById(id, status).then(resData => {
-        if (resData.data.ret === 0) {
-          this.$Message.success("操作成功");
-          this.readGroupList();
-        } else {
-          this.$Message.error(resData.data.msg);
-        }
+      this.$Message.success("操作成功");
+      var item = this.tableData.find(item => {
+        return item.id === id;
       });
+      item.status = status;
+      deleteGroupById(id, status);
     },
     updateHandler() {
+      var item = this.tableData.find(i => {
+        return i.id === this.updateForm.id;
+      });
+      item.type = this.updateForm.type;
+      item.name = this.updateForm.name;
+      this.$Message.success("操作成功");
       updateGroupById({
         id: this.updateForm.id,
         type: this.updateForm.type,
         name: this.updateForm.name
-      }).then(resData => {
-        if (resData.data.ret === 0) {
-          this.$Message.success("操作成功");
-          this.readGroupList();
-        } else {
-          this.$Message.error(resData.data.msg);
-        }
       });
     }
   }
 };
 </script>
-
-<style>
-</style>
