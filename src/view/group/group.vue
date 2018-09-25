@@ -3,22 +3,14 @@
     <Card>
       <Form ref="searchForm" :model="searchForm"  inline>
             <FormItem prop="user">
-                <i-input type="text" style="width:400px;" clearable v-model="searchForm.keyword" placeholder="输入关键字搜索">
+                <i-input type="text" style="width:400px;" @on-enter="searchHandler" clearable v-model="searchForm.keyword" placeholder="输入关键字搜索">
                 </i-input>
-            </FormItem>
-            <FormItem>
-                <Button @click="searchHandler()">搜索</Button>
             </FormItem>
             <FormItem>
                 <Button type="primary" @click="showCreate=true">创建</Button>
             </FormItem>
       </Form>
       <Table :data="tableData" :columns="columns" stripe></Table>
-      <div style="margin: 10px;overflow: hidden">
-        <div style="float: right;">
-            <Page :total="tableData.length" :current="1" @on-change="changePage"></Page>
-        </div>
-      </div>
     </Card>
     <Modal
         v-model="showCreate"
@@ -177,6 +169,13 @@ export default {
   },
   created() {
     this.readGroupList();
+  },
+  watch: {
+    searchForm: {
+      keyword() {
+        this.searchHandler();
+      }
+    }
   },
   methods: {
     changePage() {},
