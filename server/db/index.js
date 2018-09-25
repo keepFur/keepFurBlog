@@ -6,6 +6,7 @@ let Config = require('./config');
 let Blog = require("./blog");
 let Group = require("./group");
 let Todo = require("./todo");
+let Material = require("./material");
 let pool = mysql.createPool({
     host: Config.dev.keepfur_blog_db.host,
     user: Config.dev.keepfur_blog_db.user,
@@ -18,5 +19,6 @@ let pool = mysql.createPool({
 module.exports = {
     blog: new Blog(pool),
     group: new Group(pool),
-    todo: new Todo(pool)
+    todo: new Todo(pool),
+    material: new Material(pool),
 };

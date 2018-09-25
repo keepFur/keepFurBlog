@@ -1,26 +1,83 @@
 <template>
   <div>
-    <Card>
-        <Form ref="searchForm" :model="searchForm"  inline>
-            <FormItem prop="user">
-                <i-input type="text" style="width:400px;" clearable v-model="searchForm.keyword" placeholder="输入关键字搜索">
-                </i-input>
-            </FormItem>
-            <FormItem>
-                <Button  @click="searchHandler('formInline')">搜索</Button>
-            </FormItem>
-            <FormItem>
-                <Button type="primary" @click="showCreate = true">创建</Button>
-            </FormItem>
-      </Form>
-      <Table :data="tableData" :columns="columns" stripe></Table>
-      <div style="margin: 10px;overflow: hidden">
-        <div style="float: right;">
-            <Page :total="total" :current="1" :page-size="20"  @on-change="changePage"></Page>
+      <Tabs v-model="materialType">
+        <TabPane label="图片" name="picture">
+        </TabPane>
+        <TabPane label="音频" name="mp3">
+        </TabPane>
+        <TabPane label="视频" name="video">
+        </TabPane>
+        <Button size="small" slot="extra" type="primary">创建</Button>
+      </Tabs>
+      <Row>
+        <Tabs>
+          <TabPane label="全部"></TabPane>
+          <TabPane label="分组1"></TabPane>
+          <TabPane label="分组1"></TabPane>
+          <TabPane label="分组1"></TabPane>
+          <Button size="small" slot="extra" icon="md-add"></Button>
+        </Tabs>
+      </Row>
+      <Row :gutter="8" v-if="materialType==='picture'">
+        <i-col :span="6" v-for="(item,index) in picture" :key="index">
+          <Card>
+            <p slot="title">{{item.name}}</p>
+            <div>
+              <img :src="item.path" width="100%" alt="picture">
+            </div>
+            <div class="card-action" slot="extra">
+              <Button size="small" icon="md-swap" shape="circle" @click="showCreate = true"></Button>
+              <Button size="small" icon="ios-trash" shape="circle" @click="showDelete = true"></Button>
+            </div>
+          </Card>
+        </i-col>
+      </Row>
+      <Row :gutter="8" v-if="materialType==='mp3'">
+        <i-col :span="8" v-for="(item,index) in mp3" :key="index">
+          <Card>
+            <p slot="title">{{item.name}}</p>
+            <div style="text-align:center;">
+              <audio :src="item.path" controls="controls">
+                您的浏览器不支持音频功能，建议更新到新版本。
+              </audio>
+            </div>
+            <div class="card-action" slot="extra">
+              <Button size="small" icon="md-swap" shape="circle" @click="showCreate = true"></Button>
+              <Button size="small" icon="ios-trash" shape="circle" @click="showDelete = true"></Button>
+            </div>
+          </Card>
+        </i-col>
+      </Row>
+      <Row :gutter="8" v-if="materialType==='video'">
+        <i-col :span="6" v-for="(item,index) in video" :key="index">
+          <Card>
+            <p slot="title">{{item.name}}</p>
+            <div>
+              <video :src="item.path" controls="controls" width="100%" height="200px">
+                您的浏览器不支持 video 标签。
+              </video>
+            </div>
+            <div class="card-action" slot="extra">
+              <Button size="small" icon="ios-trash" shape="circle" @click="showDelete = true"></Button>
+            </div>
+          </Card>
+        </i-col>
+      </Row>
+      <Modal v-model="showDelete" width="360">
+        <p slot="header" style="color:#f60;text-align:center">
+            <Icon type="ios-information-circle"></Icon>
+            <span>确认删除</span>
+        </p>
+        <div style="text-align:center">
+            <p>删除之后数据将会丢失</p>
+            <p>确定删除吗？</p>
         </div>
-      </div>
-    </Card>
-    <Modal
+        <div slot="footer">
+            <Button size="small" @click="showDelete=false">取消</Button>
+            <Button type="error" size="small" @click="deleteHandler">确认</Button>
+        </div>
+    </Modal>
+    <!-- <Modal
         v-model="showCreate"
         title="创建"
         @on-ok="createHandler"
@@ -45,8 +102,8 @@
                 <Input v-model="todoInfo.content" type="textarea" :autosize="{minRows: 2,maxRows: 5}" />
             </FormItem>
         </Form>
-    </Modal>
-    <Modal
+    </Modal> -->
+    <!-- <Modal
         v-model="showUpdate"
         title="修改"
         @on-ok="updateHandler"
@@ -67,7 +124,7 @@
                 <Input v-model="todoInfo.content" type="textarea" :autosize="{minRows: 2,maxRows: 5}" />
             </FormItem>
         </Form>
-    </Modal>
+    </Modal> -->
   </div>
 </template>
 
@@ -81,143 +138,77 @@ import {
 } from "@/api/todo";
 import { mapMutations } from "vuex";
 import { readGroupList } from "@/api/group";
+import img from "@/assets/images/qq-fance.jpg";
+import mp4 from "@/assets/videos/test.mp4";
+import mp3 from "@/assets/audios/test.mp3";
+// 1,图文素材不需要
 export default {
-  name: "todo_list_page",
+  name: "material_list_page",
   components: {},
   data() {
     return {
       searchForm: {
         keyword: ""
       },
+      materialType: "picture",
       groupList: [],
-      showCreate: false,
-      showUpdate: false,
-      todoInfo: {
-        title: "",
-        content: "",
-        createdDate: "",
-        groupId: 1
-      },
-      columns: [
+      mp3: [
         {
-          title: "标题",
-          key: "title"
+          id: 1,
+          name: "马云",
+          path: mp3
         },
         {
-          title: "内容",
-          key: "content"
+          id: 2,
+          name: "李彦宏.mp3",
+          path: mp3
         },
         {
-          title: "分组",
-          key: "groupName"
-        },
-        {
-          title: "作者",
-          key: "author"
-        },
-        {
-          title: "日期",
-          key: "createdDate",
-          sortable: true
-        },
-        {
-          title: "状态",
-          key: "status",
-          render: (h, params) => {
-            return h(
-              "span",
-              {
-                style: {
-                  color: params.row.status === 1 ? "#5cadff" : "#ed4014"
-                }
-              },
-              params.row.status === 1 ? "已完成" : "未完成"
-            );
-          }
-        },
-        {
-          title: "操作",
-          key: "actions",
-          width: 250,
-          align: "center",
-          render: (h, params) => {
-            return h("div", [
-              h(
-                "Button",
-                {
-                  props: {
-                    type: "default",
-                    size: "small"
-                  },
-                  style: {
-                    marginRight: "8px"
-                  },
-                  on: {
-                    click: () => {
-                      readTodoById(params.row.id).then(resData => {
-                        if (resData.data.ret === 0) {
-                          this.showUpdate = true;
-                          this.todoInfo = resData.data.todo[0];
-                        } else {
-                          this.$Message.error(resData.data.msg);
-                        }
-                      });
-                    }
-                  }
-                },
-                "编辑"
-              ),
-              h(
-                "Button",
-                {
-                  props: {
-                    type: "default",
-                    size: "small"
-                  },
-                  on: {
-                    click: () => {
-                      this.deleteHandler(
-                        params.row.id,
-                        params.row.status === 1 ? 0 : 1
-                      );
-                    }
-                  }
-                },
-                params.row.status === 1 ? "未完成" : "已完成"
-              )
-            ]);
-          }
+          id: 3,
+          name: "习近平.mp3",
+          path: mp3
         }
       ],
-      tableData: [],
-      total: 0
+      picture: [
+        {
+          id: 1,
+          name: "马云.jpg",
+          path: img
+        },
+        {
+          id: 2,
+          name: "刘强东.jpg",
+          path: img
+        },
+        {
+          id: 3,
+          name: "马化腾.jpg",
+          path: img
+        }
+      ],
+      video: [
+        {
+          id: 1,
+          name: "刘强东.mp4",
+          path: mp4
+        },
+        {
+          id: 2,
+          name: "马云.mp4",
+          path: mp4
+        },
+        {
+          id: 3,
+          name: "马云.mp4",
+          path: mp4
+        }
+      ],
+      showCreate: false,
+      showUpdate: false,
+      showDelete: false
     };
   },
-  created() {
-    this.readTodoList();
-    this.readGroupList();
-  },
   methods: {
-    changePage() {},
-    readTodoList() {
-      readTodoList({
-        limit: 20,
-        offset: 1,
-        keyword: this.searchForm.keyword,
-        isSuper: 1
-      })
-        .then(res => {
-          if (res.data.ret === 0) {
-            this.tableData = res.data.rows;
-            this.total = res.data.total;
-          } else {
-            this.$Message.success(res.data.msg);
-          }
-        })
-        .catch(err => {
-          this.$Message.success(err.message);
-        });
-    },
     createHandler() {
       createTodo(this.todoInfo).then(resData => {
         if (resData.data.ret === 0) {
@@ -254,21 +245,15 @@ export default {
           this.$Message.success(resData.data.msg);
         }
       });
-    },
-    readGroupList() {
-      readGroupList({
-        limit: 20,
-        offset: 1,
-        type: 2
-      }).then(resData => {
-        if (resData.data.ret === 0) {
-          this.groupList = resData.data.rows;
-        }
-      });
     }
   }
 };
 </script>
 
-<style>
+<style lang="less" scoped>
+.card-action {
+  & button:first-child {
+    margin-right: 8px;
+  }
+}
 </style>

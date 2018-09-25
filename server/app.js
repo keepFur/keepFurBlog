@@ -10,6 +10,7 @@ var userRouter = require('./routes/user');
 var blogRouter = require('./routes/blog');
 var groupRouter = require('./routes/group');
 var todoRouter = require('./routes/todo');
+var materialRouter = require('./routes/material');
 var app = express();
 
 // view engine setup
@@ -28,6 +29,7 @@ app.use('/api/user', userRouter);
 app.use('/api/blog', blogRouter);
 app.use('/api/group', groupRouter);
 app.use('/api/todo', todoRouter);
+app.use('/api/material', materialRouter);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
