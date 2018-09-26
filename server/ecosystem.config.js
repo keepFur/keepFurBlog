@@ -8,9 +8,9 @@ module.exports = {
     apps: [
         // First application
         {
-            name: "keep_moving",
+            name: "keepfur_blog",
             max_memory_restart: "4096M",
-            script: "app.js",
+            script: "./bin/www",
             out_file: "./logs/out.log",
             error_file: "./logs/err.log",
             instances: 1,
