@@ -7,13 +7,14 @@ let Blog = require("./blog");
 let Group = require("./group");
 let Todo = require("./todo");
 let Material = require("./material");
+let env = process.env.NODE_ENV === 'production' ? 'pro' : 'dev';
 let pool = mysql.createPool({
-    host: Config.dev.keepfur_blog_db.host,
-    user: Config.dev.keepfur_blog_db.user,
-    password: Config.dev.keepfur_blog_db.password,
-    database: Config.dev.keepfur_blog_db.database,
-    port: Config.dev.keepfur_blog_db.port,
-    multipleStatements: Config.dev.keepfur_blog_db.multipleStatements,
+    host: Config[env].keepfur_blog_db.host,
+    user: Config[env].keepfur_blog_db.user,
+    password: Config[env].keepfur_blog_db.password,
+    database: Config[env].keepfur_blog_db.database,
+    port: Config[env].keepfur_blog_db.port,
+    multipleStatements: Config[env].keepfur_blog_db.multipleStatements,
     insecureAuth: true
 });
 module.exports = {

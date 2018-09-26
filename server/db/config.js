@@ -10,6 +10,13 @@ module.exports = {
         }
     },
     pro: {
-
+        keepfur_blog_db: {
+            host: "localhost",
+            port: "3306",
+            user: "yidiankj",
+            password: "srly1108520bao@",
+            database: "keepfur_blog",
+            multipleStatements: true
+        }
     }
 };
