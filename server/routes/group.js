@@ -14,6 +14,9 @@ router.post('/create_group', function (req, res, next) {
 // 读取分组,支持分页
 router.get('/read_group_list', function (req, res, next) {
     try {
+        res.header('Access-Control-Allow-Origin', '*');
+        // res.header('Access-Control-Allow-Methods', '*');
+        // res.header('Content-Type', 'application/json;charset=utf-8');
         group.readGroupList(req, res);
     } catch (error) {
         util.log(error.message);
