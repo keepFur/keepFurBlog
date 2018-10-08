@@ -140,7 +140,7 @@ export default [
         path: 'group_page',
         name: 'group_page',
         meta: {
-          icon: 'ios-settings',
+          icon: 'ios-basket',
           title: '分组管理'
         },
         component: () => import('@/view/group/group.vue')
