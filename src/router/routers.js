@@ -1,6 +1,4 @@
 import Main from '@/view/main'
-import parentView from '@/components/parent-view'
-
 /**
  * iview-admin中meta除了原生参数外可配置的参数:
  * meta: {
@@ -161,7 +159,7 @@ export default [
           icon: 'ios-settings',
           title: '个人设置'
         },
-        component: () => import('@/view/setting_page.vue')
+        component: () => import('@/view/setting/setting_page.vue')
       }
     ]
   }

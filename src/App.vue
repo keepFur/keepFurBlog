@@ -5,6 +5,10 @@
 </template>
 
 <script>
+// todos
+// 1，清空旧数据
+// 2，解决下拉框层级问题
+// 3，清空项目中多余的文件
 export default {
   name: 'App'
 }
